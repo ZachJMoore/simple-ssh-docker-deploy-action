@@ -54,7 +54,7 @@ runs:
       run: |
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh
-        ssh-keyscan -H ${{ inputs.ssh-host }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
       shell: bash
     - name: Setup remote directory
       uses: appleboy/ssh-action@master
@@ -68,7 +68,7 @@ runs:
           mkdir -p /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
     - name: Copy files to remote
       run: |
-        sshpass -p ${{ inputs.ssh-password }} scp -P ${{ inputs.ssh-port }} $REPO_NAME.tar.gz ${{ inputs.ssh-username }}@${{ inputs.ssh-host }}:/home/${{ inputs.ssh-username }}/$REPO_NAMESPACE
+        sshpass -p $SSH_PASSWORD scp -P $SSH_PORT $REPO_NAME.tar.gz $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/$REPO_NAMESPACE
       shell: bash
     - name: Unpack, stop service, and start service
       uses: appleboy/ssh-action@master
