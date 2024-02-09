@@ -28,6 +28,7 @@ runs:
         echo "Repo name: $REPO_NAME"
         echo "REPO_NAMESPACE=$REPO_NAMESPACE" >> $GITHUB_ENV
         echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+      shell: bash
     - name: Set environment variables
       run: |
         echo "SSH_HOST=${{ inputs.ssh-host }}" >> $GITHUB_ENV
@@ -35,6 +36,7 @@ runs:
         echo "SSH_PASSWORD=${{ inputs.ssh-password }}" >> $GITHUB_ENV
         echo "SSH_PORT=${{ inputs.ssh-port }}" >> $GITHUB_ENV
         echo "DOTENV=${{ inputs.dotenv }}" >> $GITHUB_ENV
+      shell: bash
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -42,15 +44,18 @@ runs:
     - name: Remove .git
       run: |
         rm -rf repo/.git
+      shell: bash
     - name: Archive files
       run: |
         cd repo
         tar -czf ../$REPO_NAME.tar.gz .
+      shell: bash
     - name: Setup known_hosts
       run: |
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh
         ssh-keyscan -H ${{ inputs.ssh-host }} >> ~/.ssh/known_hosts
+      shell: bash
     - name: Setup remote directory
         uses: appleboy/ssh-action@master
         with:
