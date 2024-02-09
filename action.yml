@@ -13,6 +13,10 @@ inputs:
   ssh-port:
     description: "SSH port"
     required: true
+  strict-host-key-checking:
+    description: "SSH strict. Set to 'yes' to enable strict host key checking or 'no' to disable it"
+    required: false
+    default: "yes"
   dotenv:
     description: ".env file"
     required: false
@@ -67,7 +71,7 @@ runs:
         script: |
           mkdir -p /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
     - name: Copy files to remote
-      run: sshpass -p $SSH_PASSWORD scp -P $SSH_PORT $REPO_NAME.tar.gz $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/$REPO_NAMESPACE
+      run: sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=${{input.strict-host-key-checking}} -P $SSH_PORT $REPO_NAME.tar.gz $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/$REPO_NAMESPACE
       shell: bash
     - name: Unpack, stop service, and start service
       uses: appleboy/ssh-action@master
