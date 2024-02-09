@@ -1,0 +1,88 @@
+name: 'Simple SSH Docker Deploy Action'
+description: 'Deploys a repository to a remote server'
+inputs:
+  ssh-host:
+    description: 'SSH host'
+    required: true
+  ssh-username:
+    description: 'SSH username'
+    required: true
+  ssh-password:
+    description: 'SSH password'
+    required: true
+  ssh-port:
+    description: 'SSH port'
+    required: true
+  envs:
+    description: 'Environment variables'
+    required: false
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: Extract namespace and repository name
+        run: |
+          REPO_NAMESPACE=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 1)
+          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
+          echo "Repo Namespace: $REPO_NAMESPACE"
+          echo "Repo name: $REPO_NAME"
+          echo "REPO_NAMESPACE=$REPO_NAMESPACE" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+    - name: Set environment variables
+      run: |
+        echo "SSH_HOST=${{ inputs.ssh-host }}" >> $GITHUB_ENV
+        echo "SSH_USERNAME=${{ inputs.ssh-username }}" >> $GITHUB_ENV
+        echo "SSH_PASSWORD=${{ inputs.ssh-password }}" >> $GITHUB_ENV
+        echo "SSH_PORT=${{ inputs.ssh-port }}" >> $GITHUB_ENV
+        echo "ENVS=${{ inputs.envs }}" >> $GITHUB_ENV
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: repo
+    - name: Remove .git
+      run: |
+        rm -rf repo/.git
+    - name: Archive files
+      run: |
+        cd repo
+        tar -czf ../$REPO_NAME.tar.gz .
+    - name: Setup known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        ssh-keyscan -H ${{ inputs.ssh-host }} >> ~/.ssh/known_hosts
+    - name: Setup remote directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: $SSH_HOST
+          username: $SSH_USERNAME
+          password: $SSH_PASSWORD
+          port: $SSH_PORT
+          envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE
+          script: |
+            mkdir -p /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
+    - name: Copy files to remote
+      run: |
+        sshpass -p ${{ inputs.ssh-password }} scp -P ${{ inputs.ssh-port }} $REPO_NAME.tar.gz ${{ inputs.ssh-username }}@${{ inputs.ssh-host }}:/home/${{ inputs.ssh-username }}/$REPO_NAMESPACE
+      shell: bash
+    - name: Unpack, stop service, and start service
+        uses: appleboy/ssh-action@master
+        with:
+          host: $SSH_HOST
+          username: $SSH_USERNAME
+          password: $SSH_PASSWORD
+          port: $SSH_PORT
+          envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD,ENVS
+          script: |
+            cd /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
+            echo $SSH_PASSWORD | sudo -S docker-compose down
+            cd /home/$SSH_USERNAME/$REPO_NAMESPACE
+            rm -rf $REPO_NAME
+            mkdir $REPO_NAME
+            mv $REPO_NAME.tar.gz $REPO_NAME
+            cd $REPO_NAME
+            tar -xzf $REPO_NAME.tar.gz
+            rm -f $REPO_NAME.tar.gz
+            # setup .env
+            echo $ENVS > .env
+            echo $SSH_PASSWORD | sudo -S docker-compose up -d --build
