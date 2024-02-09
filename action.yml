@@ -1,24 +1,24 @@
-name: 'Simple SSH Docker Deploy Action'
-description: 'Deploys a repository to a remote server'
+name: "Simple SSH Docker Deploy Action"
+description: "Deploys a repository to a remote server"
 inputs:
   ssh-host:
-    description: 'SSH host'
+    description: "SSH host"
     required: true
   ssh-username:
-    description: 'SSH username'
+    description: "SSH username"
     required: true
   ssh-password:
-    description: 'SSH password'
+    description: "SSH password"
     required: true
   ssh-port:
-    description: 'SSH port'
+    description: "SSH port"
     required: true
   dotenv:
-    description: '.env file'
+    description: ".env file"
     required: false
-    default: ''
+    default: ""
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Extract namespace and repository name
       run: |
@@ -57,37 +57,37 @@ runs:
         ssh-keyscan -H ${{ inputs.ssh-host }} >> ~/.ssh/known_hosts
       shell: bash
     - name: Setup remote directory
-        uses: appleboy/ssh-action@master
-        with:
-          host: $SSH_HOST
-          username: $SSH_USERNAME
-          password: $SSH_PASSWORD
-          port: $SSH_PORT
-          envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE
-          script: |
-            mkdir -p /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
+      uses: appleboy/ssh-action@master
+      with:
+        host: $SSH_HOST
+        username: $SSH_USERNAME
+        password: $SSH_PASSWORD
+        port: $SSH_PORT
+        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE
+        script: |
+          mkdir -p /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
     - name: Copy files to remote
       run: |
         sshpass -p ${{ inputs.ssh-password }} scp -P ${{ inputs.ssh-port }} $REPO_NAME.tar.gz ${{ inputs.ssh-username }}@${{ inputs.ssh-host }}:/home/${{ inputs.ssh-username }}/$REPO_NAMESPACE
       shell: bash
     - name: Unpack, stop service, and start service
-        uses: appleboy/ssh-action@master
-        with:
-          host: $SSH_HOST
-          username: $SSH_USERNAME
-          password: $SSH_PASSWORD
-          port: $SSH_PORT
-          envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD,DOTENV
-          script: |
-            cd /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
-            echo $SSH_PASSWORD | sudo -S docker-compose down
-            cd /home/$SSH_USERNAME/$REPO_NAMESPACE
-            rm -rf $REPO_NAME
-            mkdir $REPO_NAME
-            mv $REPO_NAME.tar.gz $REPO_NAME
-            cd $REPO_NAME
-            tar -xzf $REPO_NAME.tar.gz
-            rm -f $REPO_NAME.tar.gz
-            # setup .env
-            echo $DOTENV > .env
-            echo $SSH_PASSWORD | sudo -S docker-compose up -d --build
+      uses: appleboy/ssh-action@master
+      with:
+        host: $SSH_HOST
+        username: $SSH_USERNAME
+        password: $SSH_PASSWORD
+        port: $SSH_PORT
+        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD,DOTENV
+        script: |
+          cd /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
+          echo $SSH_PASSWORD | sudo -S docker-compose down
+          cd /home/$SSH_USERNAME/$REPO_NAMESPACE
+          rm -rf $REPO_NAME
+          mkdir $REPO_NAME
+          mv $REPO_NAME.tar.gz $REPO_NAME
+          cd $REPO_NAME
+          tar -xzf $REPO_NAME.tar.gz
+          rm -f $REPO_NAME.tar.gz
+          # setup .env
+          echo $DOTENV > .env
+          echo $SSH_PASSWORD | sudo -S docker-compose up -d --build
