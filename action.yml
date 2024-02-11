@@ -51,6 +51,7 @@ runs:
     - name: Add .env file
       run: |
         printf "%s\n" ${{ inputs.dotenv }} > repo/.env
+      shell: bash
     - name: Archive files
       run: |
         cd repo
