@@ -39,7 +39,7 @@ runs:
         echo "SSH_USERNAME=${{ inputs.ssh-username }}" >> $GITHUB_ENV
         echo "SSH_PASSWORD=${{ inputs.ssh-password }}" >> $GITHUB_ENV
         echo "SSH_PORT=${{ inputs.ssh-port }}" >> $GITHUB_ENV
-        echo "DOTENV=${{ inputs.dotenv }}" >> $GITHUB_ENV
+        printf "%s\n" "$DOTENV" >> $GITHUB_ENV
       shell: bash
     - name: Checkout
       uses: actions/checkout@v2
