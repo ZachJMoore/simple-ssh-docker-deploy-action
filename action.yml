@@ -79,7 +79,7 @@ runs:
         username: $SSH_USERNAME
         password: $SSH_PASSWORD
         port: $SSH_PORT
-        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD,DOTENV
+        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD
         script: |
           cd /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
           echo $SSH_PASSWORD | sudo -S docker-compose down
