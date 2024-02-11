@@ -76,7 +76,6 @@ runs:
     - name: Copy files to remote
       run: sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=${{inputs.strict-host-key-checking}} -P $SSH_PORT $REPO_NAME.tar.gz $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/$REPO_NAMESPACE
       shell: bash
-      shell: bash
     - name: Unpack, stop service, and start service
       uses: appleboy/ssh-action@master
       with:
