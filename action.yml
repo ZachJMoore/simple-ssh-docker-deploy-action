@@ -39,6 +39,7 @@ runs:
         echo "SSH_USERNAME=${{ inputs.ssh-username }}" >> $GITHUB_ENV
         echo "SSH_PASSWORD=${{ inputs.ssh-password }}" >> $GITHUB_ENV
         echo "SSH_PORT=${{ inputs.ssh-port }}" >> $GITHUB_ENV
+        echo "DOTENV=${{ inputs.dotenv }}" >> $GITHUB_ENV
       shell: bash
     - name: Checkout
       uses: actions/checkout@v2
@@ -79,7 +80,7 @@ runs:
         username: $SSH_USERNAME
         password: $SSH_PASSWORD
         port: $SSH_PORT
-        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD
+        envs: SSH_USERNAME,REPO_NAME,REPO_NAMESPACE,SSH_PASSWORD,DOTENV
         script: |
           cd /home/$SSH_USERNAME/$REPO_NAMESPACE/$REPO_NAME
           echo $SSH_PASSWORD | sudo -S docker-compose down
@@ -91,5 +92,5 @@ runs:
           tar -xzf $REPO_NAME.tar.gz
           rm -f $REPO_NAME.tar.gz
           # setup .env
-          echo "${{ inputs.dotenv }}" > .env
+          echo $DOTENV > .env
           echo $SSH_PASSWORD | sudo -S docker-compose up -d --build
