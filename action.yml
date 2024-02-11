@@ -92,5 +92,5 @@ runs:
           tar -xzf $REPO_NAME.tar.gz
           rm -f $REPO_NAME.tar.gz
           # setup .env
-          echo $DOTENV > .env
+          echo "$DOTENV" > .env
           echo $SSH_PASSWORD | sudo -S docker-compose up -d --build
